@@ -32,7 +32,7 @@ const teamData = [
   {
     id: "designer",
     name: "Atif Ali",
-    role: "UI/UX Designer",
+    role: "Full Stack Developer & Designer",
     category: "Staff",
     bio: "Designs intuitive and visually appealing user experiences with a focus on usability, consistency, and modern design principles.",
     image: atifProfile,
