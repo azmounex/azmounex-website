@@ -168,7 +168,14 @@ function HomePage() {
     async function fetchHeroSlides() {
       try {
         const data = await apiRequest("/public/hero-slides");
-        setHeroSlides(data);
+        const normalizedSlides = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.slides)
+            ? data.slides
+            : Array.isArray(data?.heroSlides)
+              ? data.heroSlides
+              : [];
+        setHeroSlides(normalizedSlides);
       } catch {
         setHeroSlides([]);
       }

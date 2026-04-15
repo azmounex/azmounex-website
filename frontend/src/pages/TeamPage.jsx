@@ -34,9 +34,15 @@ function TeamPage() {
       try {
         setLoading(true);
         const data = await apiRequest("/public/team-members");
-        setTeamMembers(data);
+        const normalizedMembers = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.teamMembers)
+            ? data.teamMembers
+            : [];
+        setTeamMembers(normalizedMembers);
       } catch (fetchError) {
         setError(fetchError.message || "Unable to load team members");
+        setTeamMembers([]);
       } finally {
         setLoading(false);
       }
@@ -46,7 +52,7 @@ function TeamPage() {
   }, []);
 
   const sortedMembers = useMemo(
-    () => [...teamMembers].sort((left, right) => (left.order ?? 0) - (right.order ?? 0)),
+    () => (Array.isArray(teamMembers) ? [...teamMembers] : []).sort((left, right) => (left.order ?? 0) - (right.order ?? 0)),
     [teamMembers]
   );
 

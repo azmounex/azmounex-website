@@ -4,6 +4,20 @@ import ResourceManager from "../../components/admin/ResourceManager.jsx";
 import SubmissionsSection from "../../components/admin/SubmissionsSection.jsx";
 import Seo from "../../components/seo/Seo.jsx";
 
+function normalizeListPayload(payload, fallbackKeys = []) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  for (const key of fallbackKeys) {
+    if (Array.isArray(payload?.[key])) {
+      return payload[key];
+    }
+  }
+
+  return [];
+}
+
 function AdminDashboardPage() {
   const token = window.localStorage.getItem("adminToken");
   const [projectCategories, setProjectCategories] = useState([]);
@@ -25,11 +39,17 @@ function AdminDashboardPage() {
         apiRequest("/submissions/main-page", { token }),
       ]);
 
-      setProjectCategories(categoryData);
-      setProjects(projectData);
-      setTeamMembers(teamData);
-      setContactSubmissions(contactData);
-      setMainPageSubmissions(mainData);
+      setProjectCategories(normalizeListPayload(categoryData, ["categories", "projectCategories"]));
+      setProjects(normalizeListPayload(projectData, ["projects", "items"]));
+      setTeamMembers(normalizeListPayload(teamData, ["teamMembers", "members", "items"]));
+      setContactSubmissions(normalizeListPayload(contactData, ["submissions", "contactSubmissions", "items"]));
+      setMainPageSubmissions(normalizeListPayload(mainData, ["submissions", "mainPageSubmissions", "items"]));
+    } catch {
+      setProjectCategories([]);
+      setProjects([]);
+      setTeamMembers([]);
+      setContactSubmissions([]);
+      setMainPageSubmissions([]);
     } finally {
       setLoading(false);
     }
