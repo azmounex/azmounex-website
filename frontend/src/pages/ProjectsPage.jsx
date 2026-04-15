@@ -14,7 +14,7 @@ function ProjectsPage() {
     async function fetchProjects() {
       try {
         setLoading(true);
-        const data = await apiRequest("/projects");
+        const data = await apiRequest("public/projects");
         setProjects(data);
       } catch (fetchError) {
         setError(fetchError.message || "Unable to load projects");
