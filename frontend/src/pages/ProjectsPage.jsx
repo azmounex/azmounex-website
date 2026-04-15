@@ -14,10 +14,16 @@ function ProjectsPage() {
     async function fetchProjects() {
       try {
         setLoading(true);
-        const data = await apiRequest("public/projects");
-        setProjects(data);
+        const data = await apiRequest("/public/projects");
+        const normalizedProjects = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.projects)
+            ? data.projects
+            : [];
+        setProjects(normalizedProjects);
       } catch (fetchError) {
         setError(fetchError.message || "Unable to load projects");
+        setProjects([]);
       } finally {
         setLoading(false);
       }
