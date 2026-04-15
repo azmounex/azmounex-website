@@ -27,7 +27,9 @@ const apiLimiter = rateLimit({
 
 app.use(
   cors({
-    origin: "https://www.azmounex.com",
+    "https://www.azmounex.com",
+    "https://azmounex.com",
+    "http://localhost:5173"
     credentials: true,
   }),
 );
