@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight, Check, MapPin, Briefcase } from "lucide-react";
+import Seo from "../components/seo/Seo.jsx";
+import { pageSeo } from "../constants/seo.js";
 
 const jobOpenings = [];
 
@@ -58,6 +60,7 @@ const values = [
 function CareersPage() {
   return (
     <div className="w-full bg-white text-slate-900">
+      <Seo {...pageSeo.careers} />
       {/* Hero Section */}
       <section className="mx-auto w-full max-w-6xl px-4 py-12 md:px-12 md:py-16">
         <div className="text-center">

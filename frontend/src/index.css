@@ -1,19 +1,99 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap");
 @import "tailwindcss";
 
 :root {
+	--font-body: "Manrope", "Segoe UI", sans-serif;
+	--font-heading: "Plus Jakarta Sans", "Manrope", "Segoe UI", sans-serif;
+
 	--accent-blue: #1d9bf0;
+	--accent-blue-strong: #0f7ecf;
+	--secondary-teal: #10b9a4;
+	--accent-amber: #f59e0b;
 	--brand-blue-soft: rgba(29, 155, 240, 0.12);
+	--brand-teal-soft: rgba(16, 185, 164, 0.12);
 	--surface: #ffffff;
+	--surface-elevated: #ffffff;
 	--surface-soft: #f5faff;
+	--surface-muted: #eef5fb;
 	--border-soft: #d9eaf7;
+	--border-strong: #bdd8ed;
 	--ink: #0f172a;
 	--muted: #475569;
+	--muted-soft: #64748b;
 	--page-bg: #f8fbff;
+
+	--radius-xs: 0.5rem;
+	--radius-sm: 0.75rem;
+	--radius-md: 1rem;
+	--radius-lg: 1.5rem;
+	--radius-xl: 2rem;
+
+	--shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.06);
+	--shadow-md: 0 14px 30px rgba(15, 23, 42, 0.1);
+	--shadow-lg: 0 22px 50px rgba(15, 23, 42, 0.14);
+
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.25rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+	--space-10: 2.5rem;
+	--space-12: 3rem;
+	--space-16: 4rem;
+	--space-20: 5rem;
 }
 
 body {
+	font-family: var(--font-body);
 	background: linear-gradient(180deg, #ffffff 0%, var(--page-bg) 100%);
 	color: var(--ink);
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--font-heading);
+	letter-spacing: -0.02em;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+	font-family: inherit;
+}
+
+.section-shell {
+	margin-inline: auto;
+	width: 100%;
+	max-width: 72rem;
+	padding-inline: 1rem;
+}
+
+@media (min-width: 768px) {
+	.section-shell {
+		padding-inline: 3rem;
+	}
+}
+
+.glass-card {
+	border: 1px solid var(--border-soft);
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 250, 255, 0.92) 100%);
+	box-shadow: var(--shadow-sm);
+	backdrop-filter: blur(8px);
+}
+
+.focus-ring {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.18);
 }
 
 .ticker-track {

@@ -1,25 +1,47 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import projectsData from "../data/projectsData";
+import { apiRequest, resolveMediaUrl } from "../lib/api.js";
+import Seo from "../components/seo/Seo.jsx";
+import { pageSeo } from "../constants/seo.js";
 
 function ProjectsPage() {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const categories = useMemo(() => {
-    const fromData = projectsData.map((project) => project.category).filter(Boolean);
-    return ["All", ...new Set(fromData)];
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        setLoading(true);
+        const data = await apiRequest("/public/projects");
+        setProjects(data);
+      } catch (fetchError) {
+        setError(fetchError.message || "Unable to load projects");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProjects();
   }, []);
+
+  const categories = useMemo(() => {
+    const fromData = projects.map((project) => project.category || "General").filter(Boolean);
+    return ["All", ...new Set(fromData)];
+  }, [projects]);
 
   const filteredProjects = useMemo(() => {
     if (selectedCategory === "All") {
-      return projectsData;
+      return projects;
     }
 
-    return projectsData.filter((project) => project.category === selectedCategory);
-  }, [selectedCategory]);
+    return projects.filter((project) => (project.category || "General") === selectedCategory);
+  }, [projects, selectedCategory]);
 
   return (
     <section className="mx-auto w-full max-w-6xl overflow-x-hidden px-4 py-8 md:px-12 md:py-12">
+      <Seo {...pageSeo.projects} />
       <div className="mb-8 rounded-3xl border border-[#d9eaf7] bg-white p-6 shadow-[0_12px_30px_rgba(29,155,240,0.08)] md:p-9">
         <p className="text-xs font-semibold uppercase tracking-[0.26em] text-[#1d9bf0]">Our Projects</p>
         <h1 className="mt-3 text-4xl font-extrabold tracking-tighter text-slate-900 md:text-6xl">
@@ -30,13 +52,25 @@ function ProjectsPage() {
         </p>
       </div>
 
+      {loading ? (
+        <div className="mb-6 rounded-2xl border border-[#d9eaf7] bg-white p-6 text-slate-700 shadow-sm">
+          Loading projects...
+        </div>
+      ) : null}
+
+      {error ? (
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-6 text-red-600 shadow-sm">
+          {error}
+        </div>
+      ) : null}
+
       {filteredProjects.length === 0 && (
         <div className="rounded-2xl border border-[#d9eaf7] bg-white p-6 text-slate-700 shadow-sm">
           No projects available for this category.
         </div>
       )}
 
-      {projectsData.length > 0 && (
+      {projects.length > 0 && (
         <>
           <div className="mb-6 flex flex-wrap gap-2">
             {categories.map((category) => (
@@ -65,11 +99,11 @@ function ProjectsPage() {
           <div className="grid gap-6 md:grid-cols-2">
             {filteredProjects.map((project) => (
               <article
-                key={project.title}
+                key={project._id}
                 className="overflow-hidden rounded-3xl border border-[#d9eaf7] bg-white shadow-sm transition hover:border-[#1d9bf0]/50"
               >
                 <img
-                  src={project.image || "https://placehold.co/1200x800/111111/ffffff?text=Project"}
+                  src={resolveMediaUrl(project.image?.url) || "https://placehold.co/1200x800/111111/ffffff?text=Project"}
                   alt={project.title}
                   className="h-56 w-full object-cover md:h-64"
                 />
@@ -88,11 +122,11 @@ function ProjectsPage() {
                     </button>
                   </div>
 
-                  {Array.isArray(project.tags) && project.tags.length > 0 && (
+                  {Array.isArray(project.technologies) && project.technologies.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-2">
-                      {project.tags.map((tag) => (
+                      {project.technologies.map((tag) => (
                         <span
-                          key={`${project.title}-${tag}`}
+                          key={`${project._id}-${tag}`}
                           className="rounded-full border border-[#d9eaf7] bg-[#f5faff] px-3 py-1 text-xs text-slate-600"
                         >
                           {tag}

@@ -1,10 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import heroImage1 from "../assets/hero_section/hero_section_image_1.png";
-import heroImage2 from "../assets/hero_section/hero_section_image_2.png";
-import heroImage3 from "../assets/hero_section/hero_section_image_3.png";
-import heroImage4 from "../assets/hero_section/hero_section_image_4.png"; 
-import heroImage5 from "../assets/hero_section/hero_section_image_5.png";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import webImage from "../assets/services_section/web.webp";
 import landingimage from "../assets/services_section/landing_page.webp";
 import uiImage from "../assets/services_section/ui.avif";
@@ -13,56 +9,87 @@ import desktopImage from "../assets/services_section/desktop.avif";
 import aiImage from "../assets/services_section/ai.webp";
 import saasImage from "../assets/services_section/saas.webp";
 import mobileImage from "../assets/services_section/mobile.webp";
+import MainPageInquiryForm from "../components/forms/MainPageInquiryForm.jsx";
+import { apiRequest, resolveMediaUrl } from "../lib/api.js";
+import Seo from "../components/seo/Seo.jsx";
+import { pageSeo } from "../constants/seo.js";
 
-const tickerItems = [
-  "AI Solutions",
-  "Web Development",
-  "Mobile Apps",
-  "Desktop Apps",
-  "POS Systems",
-  "E-Commerce Stores",
-  "ERP Solutions",
-  "CRM Software",
-  "SaaS Products",
-  "UI/UX Design",
-  "Chatbot Development",
-];
+const pageFade = {
+  initial: { opacity: 0 },
+  animate: {
+    opacity: 1,
+    transition: { duration: 0.45, ease: "easeOut", staggerChildren: 0.08 },
+  },
+};
+
+const heroText = {
+  initial: { opacity: 0, x: -18 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
+
+const heroPanel = {
+  initial: { opacity: 0, y: 18, scale: 0.98 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.65, ease: "easeOut" } },
+};
+
+const sectionReveal = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.08 },
+  },
+};
+
+const itemReveal = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+};
+
+const hoverLift = {
+  scale: 1.05,
+  y: -4,
+  boxShadow: "0 18px 40px rgba(29, 155, 240, 0.16)",
+};
+
+const tapScale = { scale: 0.97 };
+
 
 const milestoneCards = [
   {
     title: "The Beginning",
     description:
-      "Azmounex was founded in 2025 with a mission to build innovative, scalable, and user-focused digital solutions.",
+      "Azmounex was established with a clear vision—to deliver reliable, scalable, and modern digital solutions tailored for evolving business needs.",
     badge: "2025",
     icon: "✿",
   },
   {
     title: "Early Growth",
     description:
-      "Started collaborating with startups and businesses, delivering high-quality web, mobile, and AI-powered solutions.",
+      "We began collaborating with startups and small businesses, delivering practical solutions across web, mobile, and intelligent systems.",
     badge: "2025",
     icon: "✦",
   },
   {
     title: "Building Impact",
     description:
-      "Focused on creating meaningful digital products that enhance user experience and drive real business growth.",
+      "Our focus shifted towards creating high-performance products that not only function well but also drive measurable business results.",
     badge: "2025",
     icon: "◜",
   },
   {
     title: "Future Vision",
     description:
-      "Expanding into AI/ML, automation, and global markets to shape the future of digital innovation.",
+      "We aim to expand into advanced AI systems, automation, and global markets while continuously improving our technical and creative capabilities.",
     badge: "Beyond 2025",
     icon: "✺",
   },
 ];
 
 const stats = [
-  { value: "5+", label: "Projects in Progress" },
+  { value: "5+", label: "Active Projects" },
   { value: "10+", label: "Happy Clients" },
-  { value: "3+", label: "Technologies Mastered" },
+  { value: "3+", label: "Core Technologies" },
   { value: "24/7", label: "Dedicated Support" },
 ];
 
@@ -120,76 +147,142 @@ const services = [
 
 
 function HomePage() {
+  const [heroSlides, setHeroSlides] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const heroImages = [heroImage1, heroImage2, heroImage3, heroImage4, heroImage5];
+  const [isMobile, setIsMobile] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
-    }, 5000);
-    return () => clearInterval(interval);
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const handleMediaChange = (event) => setIsMobile(event.matches);
+
+    setIsMobile(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleMediaChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleMediaChange);
+    };
   }, []);
 
+  useEffect(() => {
+    async function fetchHeroSlides() {
+      try {
+        const data = await apiRequest("/public/hero-slides");
+        setHeroSlides(data);
+      } catch {
+        setHeroSlides([]);
+      }
+    }
+
+    fetchHeroSlides();
+  }, []);
+
+  const heroImages = useMemo(
+    () =>
+      heroSlides.length
+        ? heroSlides.map((slide) => resolveMediaUrl(slide.imageUrl)).filter(Boolean)
+        : ["https://placehold.co/1000x1200/e2e8f0/0f172a?text=Hero+Image"],
+    [heroSlides],
+  );
+
+  const interactiveHover = isMobile || shouldReduceMotion ? undefined : hoverLift;
+  const interactiveCardHover =
+    isMobile || shouldReduceMotion
+      ? undefined
+      : { scale: 1.03, y: -4, boxShadow: "0 18px 35px rgba(29,155,240,0.12)" };
+  const sectionViewport = isMobile
+    ? { once: true, amount: 0.08 }
+    : { once: true, amount: 0.2 };
+
+  useEffect(() => {
+    if (heroImages.length <= 1) {
+      return undefined;
+    }
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
+
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <section className="bg-white px-4 pb-8 pt-2 text-slate-900 md:px-12 md:pt-3">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 py-2 lg:grid-cols-2 lg:items-center lg:py-4">
-          <div>
-            <p className="mb-6 hidden text-[10px] font-semibold uppercase tracking-[0.28em] text-[#1d9bf0] lg:block">
+    <motion.div
+      className="min-h-screen overflow-x-hidden bg-white text-slate-900"
+      initial="initial"
+      animate="animate"
+      variants={pageFade}
+    >
+      <Seo {...pageSeo.home} />
+      <motion.section className="bg-white px-4 pb-8 pt-3 text-slate-900 sm:px-6 lg:px-10 lg:pt-5" initial="initial" animate="animate" variants={pageFade}>
+        <div className="mx-auto grid w-full max-w-7xl gap-8 py-2 sm:gap-10 lg:grid-cols-2 lg:items-center lg:py-4">
+          <motion.div variants={heroText}>
+            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#1d9bf0] sm:mb-6 sm:tracking-[0.28em]">
               About Us
             </p>
-            <h1 className="max-w-xl text-5xl font-extrabold leading-[0.92] tracking-tighter md:text-7xl">
+            <motion.h1 className="max-w-xl text-4xl font-extrabold leading-[0.95] tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl" variants={heroText}>
               Crafting Digital
               <br />
               Brilliance<span className="text-[#1d9bf0]">.</span>
-            </h1>
-            <p className="mt-7 max-w-lg text-[1.06rem] leading-relaxed text-slate-600">
-              We are Azmounex, a startup studio transforming businesses with cutting-edge digital
-              experiences.
-            </p>
-            <p className="mt-4 max-w-lg text-[1.06rem] leading-relaxed text-slate-600">
-              You can also white-label all our services for the best price on the market.
-            </p>
+            </motion.h1>
+            <motion.p className="mt-6 max-w-xl text-base leading-relaxed text-slate-600 sm:mt-7 sm:text-[1.02rem]" variants={heroText}>
+             Azmounex is a technology startup studio focused on building high-performance digital products for modern businesses. We combine design, development, and intelligent systems to turn ideas into scalable solutions.
+            </motion.p>
+            <motion.p className="mt-3 max-w-xl text-base leading-relaxed text-slate-600 sm:mt-4 sm:text-[1.02rem]" variants={heroText}>
+              We also offer white-label development services, enabling agencies and businesses to scale efficiently without compromising on quality.
+            </motion.p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/projects"
-                className="rounded-full border border-[#d9eaf7] bg-white px-5 py-2.5 text-sm font-medium text-slate-800 shadow-sm hover:border-[#1d9bf0] hover:text-[#1d9bf0]"
-              >
-                Explore Projects
-              </Link>
-              <Link
-                to="/contact"
-                className="rounded-full border border-[#1d9bf0] bg-[#1d9bf0] px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#1786d3]"
-              >
-                Contact Us
-              </Link>
+            <div className="mt-7 flex flex-wrap gap-3 sm:mt-8">
+              <motion.div whileHover={interactiveHover} whileTap={tapScale} transition={{ type: "spring", stiffness: 380, damping: 24 }}>
+                <Link
+                  to="/projects"
+                  className="inline-flex min-h-11 items-center rounded-full border border-[#d9eaf7] bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:border-[#1d9bf0] hover:text-[#1d9bf0]"
+                >
+                View Our Work
+                </Link>
+              </motion.div>
+              <motion.div whileHover={interactiveHover} whileTap={tapScale} transition={{ type: "spring", stiffness: 380, damping: 24 }}>
+                <Link
+                  to="/contact"
+                  className="inline-flex min-h-11 items-center rounded-full border border-[#1d9bf0] bg-[#1d9bf0] px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#1786d3]"
+                >
+                Start a Project
+                </Link>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-            <div className="absolute inset-0 left-1/2 top-1/2 h-[24rem] w-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d8efff]" />
-            <div className="relative z-10 mx-auto h-[30rem] w-[82%] -translate-y-8 overflow-hidden rounded-3xl border-2 border-[#1d9bf0]/20 shadow-lg md:-translate-y-10">
-              <img
-                src={heroImages[currentSlide]}
-                className="h-full w-full object-cover transition-opacity duration-700"
-                alt="hero"
-              />
+          <motion.div className="relative mx-auto w-full max-w-md sm:max-w-lg lg:max-w-none" variants={heroPanel}>
+            <div className="absolute inset-0 left-1/2 top-1/2 h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d8efff] sm:h-[24rem] sm:w-[24rem]" />
+            <motion.div className="relative z-10 mx-auto h-[22rem] w-[88%] -translate-y-4 overflow-hidden rounded-3xl border-2 border-[#1d9bf0]/20 shadow-lg sm:h-[26rem] sm:w-[82%] sm:-translate-y-6 md:h-[30rem] md:-translate-y-10" whileHover={isMobile || shouldReduceMotion ? undefined : { scale: 1.01 }} transition={{ type: "spring", stiffness: 220, damping: 26 }}>
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={heroImages[currentSlide]}
+                  src={heroImages[currentSlide]}
+                  className="h-full w-full object-cover"
+                  alt="hero"
+                  loading="eager"
+                  initial={shouldReduceMotion || isMobile ? { opacity: 0 } : { opacity: 0, scale: 1.03 }}
+                  animate={shouldReduceMotion || isMobile ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+                  exit={shouldReduceMotion || isMobile ? { opacity: 0 } : { opacity: 0, scale: 1.01 }}
+                  transition={{ duration: shouldReduceMotion || isMobile ? 0.35 : 0.7, ease: "easeOut" }}
+                />
+              </AnimatePresence>
               <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2">
                 {heroImages.map((_, index) => (
-                  <button
+                  <motion.button
                     key={index}
                     type="button"
                     onClick={() => setCurrentSlide(index)}
+                    whileTap={tapScale}
                     className={`h-2 rounded-full transition ${
                       index === currentSlide ? "w-8 bg-[#1d9bf0]" : "w-2 bg-white/50"
                     }`}
                   />
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="absolute bottom-32 left-0 z-20 rounded-xl border border-[#d9eaf7] bg-white/90 p-4 shadow-sm backdrop-blur-sm">
+            <motion.div className="absolute bottom-16 left-1 z-20 hidden rounded-xl border border-[#d9eaf7] bg-white/90 p-4 shadow-sm backdrop-blur-sm sm:block" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.5 }}>
               <div className="flex items-center gap-2 text-slate-600">
                 <img src="https://i.pravatar.cc/40?img=11" alt="avatar" className="h-7 w-7 rounded-full object-cover" />
                 <img src="https://i.pravatar.cc/40?img=52" alt="avatar" className="-ml-2 h-7 w-7 rounded-full object-cover" />
@@ -199,87 +292,73 @@ function HomePage() {
               </div>
               <p className="mt-2 text-sm font-semibold text-slate-900">Satisfied Customer</p>
               <p className="mt-1 text-xs text-slate-500">★★★★★ 4.9/5 Review</p>
-            </div>
+            </motion.div>
 
-            <div className="absolute bottom-12 right-0 z-20 rounded-xl border border-[#d9eaf7] bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm">
-              <p className="text-4xl font-extrabold tracking-tighter text-slate-900">10+</p>
-              <p className="text-sm text-slate-500">Happy Businesses</p>
-            </div>
-          </div>
+            <motion.div className="absolute bottom-5 right-1 z-20 hidden rounded-xl border border-[#d9eaf7] bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm sm:block" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.42, duration: 0.5 }}>
+              <p className="text-3xl font-extrabold tracking-tighter text-slate-900 md:text-4xl">10+</p>
+              <p className="text-xs text-slate-500 md:text-sm">Happy Businesses</p>
+            </motion.div>
+          </motion.div>
         </div>
 
-        <div className="mx-auto mt-6 hidden w-full max-w-6xl border-t border-[#d9eaf7] pt-6 lg:block">
-          <div className="grid gap-8 text-slate-900 md:grid-cols-4 md:gap-6">
-            <div>
-              <p className="text-6xl font-extrabold tracking-tighter">10<span className="text-[#1d9bf0]">+</span></p>
-              <p className="text-xl tracking-tight text-slate-600">Success Project</p>
-            </div>
-            <div>
-              <p className="text-6xl font-extrabold tracking-tighter">1<span className="text-[#1d9bf0]">+</span></p>
-              <p className="text-xl tracking-tight text-slate-600">Years Experience</p>
-            </div>
-            <div>
-              <p className="text-6xl font-extrabold tracking-tighter">11<span className="text-[#1d9bf0]">+</span></p>
-              <p className="text-xl tracking-tight text-slate-600">Product Launched</p>
-            </div>
-            <div>
-              <p className="text-6xl font-extrabold tracking-tighter">5<span className="text-[#1d9bf0]">+</span></p>
-              <p className="text-xl tracking-tight text-slate-600">Employees</p>
-            </div>
+        <motion.div className="mx-auto mt-8 w-full max-w-7xl border-t border-[#d9eaf7] pt-6 sm:pt-8" initial="hidden" whileInView="visible" viewport={sectionViewport} variants={sectionReveal}>
+          <div className="grid grid-cols-2 gap-5 text-slate-900 sm:gap-6 lg:grid-cols-4">
+            <motion.div variants={itemReveal} whileHover={interactiveCardHover} transition={{ type: "spring", stiffness: 280, damping: 22 }}>
+              <p className="text-4xl font-extrabold tracking-tighter sm:text-5xl lg:text-6xl">10<span className="text-[#1d9bf0]">+</span></p>
+              <p className="text-base tracking-tight text-slate-600 sm:text-lg lg:text-xl">Success Project</p>
+            </motion.div>
+            <motion.div variants={itemReveal} whileHover={interactiveCardHover} transition={{ type: "spring", stiffness: 280, damping: 22 }}>
+              <p className="text-4xl font-extrabold tracking-tighter sm:text-5xl lg:text-6xl">1<span className="text-[#1d9bf0]">+</span></p>
+              <p className="text-base tracking-tight text-slate-600 sm:text-lg lg:text-xl">Years Experience</p>
+            </motion.div>
+            <motion.div variants={itemReveal} whileHover={interactiveCardHover} transition={{ type: "spring", stiffness: 280, damping: 22 }}>
+              <p className="text-4xl font-extrabold tracking-tighter sm:text-5xl lg:text-6xl">11<span className="text-[#1d9bf0]">+</span></p>
+              <p className="text-base tracking-tight text-slate-600 sm:text-lg lg:text-xl">Product Launched</p>
+            </motion.div>
+            <motion.div variants={itemReveal} whileHover={interactiveCardHover} transition={{ type: "spring", stiffness: 280, damping: 22 }}>
+              <p className="text-4xl font-extrabold tracking-tighter sm:text-5xl lg:text-6xl">5<span className="text-[#1d9bf0]">+</span></p>
+              <p className="text-base tracking-tight text-slate-600 sm:text-lg lg:text-xl">Employees</p>
+            </motion.div>
           </div>
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
-      <section className="overflow-hidden bg-white">
-        <div className="bg-[#1d9bf0] py-6 shadow-sm">
-          <div className="ticker-track text-nowrap py-0">
-            {[...tickerItems, ...tickerItems].map((item, index) => (
-              <span
-                key={`${item}-${index}`}
-                className="mx-4 inline-flex items-center gap-4 text-2xl font-medium tracking-tight text-white"
-              >
-                {item}
-                <span className="text-white/80">✦</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-14 md:px-12 md:pt-20">
+      <motion.section className="mx-auto w-full max-w-7xl px-4 pb-14 pt-12 sm:px-6 md:pb-16 md:pt-16 lg:px-10 lg:pt-20" initial="hidden" whileInView="visible" viewport={sectionViewport} variants={sectionReveal}>
         <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-          <div>
+          <motion.div variants={itemReveal}>
             <p className="mb-4 inline-flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">
               <span className="h-px w-8 bg-[#1d9bf0]" />
               About Azmounex
             </p>
 
-            <h1 className="max-w-xl text-5xl font-extrabold tracking-tighter text-slate-900 md:text-6xl">
-              Building The Future
+            <motion.h2 className="max-w-xl text-3xl font-extrabold tracking-tighter text-slate-900 sm:text-4xl md:text-5xl lg:text-6xl" variants={itemReveal}>
+              Engineering Digital Solutions
               <br />
-              With Smart Technology<span className="text-[#1d9bf0]">.</span>
-            </h1>
+              for the Future<span className="text-[#1d9bf0]">.</span>
+            </motion.h2>
 
-            <p className="mt-6 max-w-lg text-lg leading-7 text-slate-600">
-              Founded in 2025, Azmounex is a modern technology startup helping businesses transform ideas
-              into powerful digital products. We focus on innovation, performance, and user experience to
-              create solutions that truly stand out.
-            </p>
+            <motion.p className="mt-5 max-w-lg text-base leading-7 text-slate-600 sm:text-lg" variants={itemReveal}>
+              Founded in 2025, Azmounex is a forward-thinking technology startup dedicated to transforming 
+              ideas into robust, scalable digital products. We focus on performance, usability, and long-term value.
+            </motion.p>
 
-            <p className="mt-7 max-w-xl text-sm leading-7 text-slate-600">
-              From web platforms and mobile apps to AI-driven systems and scalable digital solutions, we
-              partner with startups and growing businesses to build, launch, and grow in the digital world.
-              Our mission is simple—deliver technology that is fast, smart, and built for the future.
-            </p>
-          </div>
+            <motion.p className="mt-6 max-w-xl text-sm leading-7 text-slate-600 sm:text-base" variants={itemReveal}>
+              From custom web platforms and mobile applications to AI-driven systems and SaaS products, 
+              we partner with startups and growing businesses to design, build, and scale impactful digital solutions.
+            </motion.p>
+          </motion.div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             {milestoneCards.map((card) => (
-              <article
+              <motion.article
                 key={card.title}
-                className="rounded-2xl border border-[#d9eaf7] bg-white p-6 shadow-[0_10px_30px_rgba(29,155,240,0.08)]"
+                className="rounded-2xl border border-[#d9eaf7] bg-white p-5 shadow-[0_10px_30px_rgba(29,155,240,0.08)] sm:p-6"
+                variants={itemReveal}
+                whileHover={interactiveCardHover}
+                transition={{ type: "spring", stiffness: 280, damping: 22 }}
               >
                 <div className="text-3xl text-[#1d9bf0]">{card.icon}</div>
-                <h2 className="mt-5 text-2xl font-bold tracking-tighter text-slate-900">
+                <h2 className="mt-5 text-xl font-bold tracking-tighter text-slate-900 sm:text-2xl">
                   {card.title}
                 </h2>
                 <p className="mt-4 text-sm leading-6 text-slate-600">
@@ -288,52 +367,63 @@ function HomePage() {
                 <span className="mt-5 inline-flex rounded-full bg-[#f5faff] px-4 py-2 text-sm font-medium text-slate-600">
                   {card.badge}
                 </span>
-              </article>
+              </motion.article>
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="mx-auto w-full max-w-6xl px-4 pb-16 md:px-12">
-        <div className="grid gap-4 md:grid-cols-4">
+      <motion.section className="mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-10" initial="hidden" whileInView="visible" viewport={sectionViewport} variants={sectionReveal}>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map((stat) => (
-            <article
+            <motion.article
               key={stat.label}
-                className="rounded-2xl border border-[#d9eaf7] bg-white p-6 text-center shadow-[0_10px_30px_rgba(29,155,240,0.08)]"
+                className="rounded-2xl border border-[#d9eaf7] bg-white p-5 text-center shadow-[0_10px_30px_rgba(29,155,240,0.08)] sm:p-6"
+                variants={itemReveal}
+                whileHover={interactiveCardHover}
+                transition={{ type: "spring", stiffness: 280, damping: 22 }}
             >
-                <p className="text-4xl font-extrabold tracking-tighter text-[#1d9bf0]">{stat.value}</p>
+                <p className="text-3xl font-extrabold tracking-tighter text-[#1d9bf0] sm:text-4xl">{stat.value}</p>
                 <p className="mt-2 text-sm text-slate-600">{stat.label}</p>
-            </article>
+            </motion.article>
           ))}
         </div>
-      </section>
+      </motion.section>
 
-        <section className="relative bg-[#f5faff] px-4 py-16 text-slate-900 md:px-12 md:py-24">
-        <div className="mx-auto w-full max-w-6xl">
-          <div className="mb-12 grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
-            <div>
-              <h2 className="text-5xl font-extrabold leading-tight tracking-tighter md:text-6xl">
+      <motion.section className="relative bg-[#f5faff] px-4 py-14 text-slate-900 sm:px-6 sm:py-16 lg:px-10 lg:py-24" initial="hidden" whileInView="visible" viewport={sectionViewport} variants={sectionReveal}>
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="mb-10 grid gap-6 sm:mb-12 sm:gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
+            <motion.div variants={itemReveal}>
+              <motion.h2 className="text-3xl font-extrabold leading-tight tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl" variants={itemReveal}>
                   My <span className="text-[#1d9bf0]">Services</span>
-              </h2>
-            </div>
-            <div>
-                <p className="text-lg leading-relaxed text-slate-600">
-                We offer a comprehensive suite of software development and design services tailored to meet your business needs. From custom web applications to AI-driven solutions, we deliver excellence across every project.
-              </p>
-            </div>
+              </motion.h2>
+            </motion.div>
+            <motion.div variants={itemReveal}>
+                <motion.p className="text-base leading-relaxed text-slate-600 sm:text-lg" variants={itemReveal}>
+                We provide a complete range of software development and design services tailored to help businesses build, scale, and innovate in a competitive digital landscape.
+                </motion.p>
+            </motion.div>
           </div>
 
           <div className="relative">
-            <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-4 sm:mx-0 sm:gap-6 sm:px-0 scrollbar-hide" style={{ WebkitOverflowScrolling: "touch" }}>
               {services.map((service) => (
-                <div
+                <motion.div
                   key={service.id}
-                  className="relative min-w-[320px] flex-shrink-0 overflow-hidden rounded-2xl border border-[#d9eaf7] bg-white backdrop-blur-sm transition-all hover:border-[#1d9bf0]/50 hover:shadow-lg hover:shadow-[#1d9bf0]/10"
+                  className="relative min-w-[82vw] snap-start flex-shrink-0 overflow-hidden rounded-2xl border border-[#d9eaf7] bg-white backdrop-blur-sm transition-all hover:border-[#1d9bf0]/50 hover:shadow-lg hover:shadow-[#1d9bf0]/10 sm:min-w-[320px] lg:min-w-[350px]"
+                  variants={itemReveal}
+                  whileHover={interactiveCardHover}
+                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
                 >
-                  <img
+                  <motion.img
                     src={service.image}
                     alt={service.title}
                     className="h-48 w-full object-cover"
+                    loading="lazy"
+                    initial={{ opacity: 0, scale: 1.04 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={sectionViewport}
+                    transition={{ duration: 0.55, ease: "easeOut" }}
                   />
                   <div className="p-5">
                     <h3 className="text-xl font-bold tracking-tight text-slate-900">
@@ -342,21 +432,24 @@ function HomePage() {
                     <p className="mt-2 text-sm text-slate-600">
                       {service.description}
                     </p>
-                    <Link
-                      to="/services"
-                      className="mt-6 inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#1d9bf0] text-white transition-all hover:bg-[#1786d3]"
-                    >
-                      <span className="text-lg">→</span>
-                    </Link>
+                    <motion.div whileTap={tapScale} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+                      <Link
+                        to="/services"
+                        className="mt-6 inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#1d9bf0] text-white transition-all hover:bg-[#1786d3]"
+                      >
+                        <span className="text-lg">→</span>
+                      </Link>
+                    </motion.div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 
             <div className="mt-8 flex justify-center gap-2">
               {Array.from({ length: Math.ceil(services.length / 3) }).map((_, i) => (
-                <button
+                <motion.button
                   key={i}
+                  whileTap={tapScale}
                   className={`h-2 rounded-full transition-all ${
                     i === 0
                       ? "w-8 bg-[#1d9bf0]"
@@ -367,106 +460,28 @@ function HomePage() {
             </div>
 
             <div className="mt-8 flex justify-center">
-              <Link
-                to="/services"
-                className="rounded-full border border-[#1d9bf0] bg-[#1d9bf0] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1786d3]"
-              >
-                View All Services
-              </Link>
+              <motion.div whileHover={interactiveHover} whileTap={tapScale} transition={{ type: "spring", stiffness: 380, damping: 24 }}>
+                <Link
+                  to="/services"
+                  className="inline-flex min-h-11 items-center rounded-full border border-[#1d9bf0] bg-[#1d9bf0] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1786d3]"
+                >
+                  Explore All Services
+                </Link>
+              </motion.div>
             </div>
           </div>
         </div>
 
         <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-gradient-to-br from-[#1d9bf0]/10 to-transparent blur-3xl" />
         <div className="absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-gradient-to-tr from-[#1d9bf0]/10 to-transparent blur-3xl" />
-      </section>
+      </motion.section>
 
-      <section className="bg-white px-4 py-20 md:px-12 md:py-32">
-        <div className="mx-auto w-full max-w-3xl">
-          <div className="mb-16 text-center">
-            <h2 className="text-5xl font-extrabold leading-tight tracking-tighter text-slate-900 md:text-6xl">
-              Have an Awesome Project Idea?{" "}
-              <span className="text-[#1d9bf0]">Let's Discuss</span>
-            </h2>
-          </div>
-
-          <form className="space-y-5">
-            {/* Name Field */}
-            <div className="relative flex h-16 items-center rounded-full border border-[#d9eaf7] bg-[#f5faff] shadow-sm hover:shadow-md transition-shadow">
-              <div className="absolute left-5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#1d9bf0]/10">
-                <svg className="h-5 w-5 text-[#1d9bf0]" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10.5 1.5H4a2.5 2.5 0 00-2.5 2.5v10A2.5 2.5 0 004 16.5h12a2.5 2.5 0 002.5-2.5V10" stroke="currentColor" strokeWidth="1.5" fill="none" />
-                  <path d="M2.5 4.5A1.5 1.5 0 104 3a1.5 1.5 0 00-1.5 1.5z" fill="currentColor" />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Name"
-                className="h-full w-full border-0 bg-transparent pl-20 pr-6 text-base text-slate-900 placeholder-slate-500 focus:outline-none"
-              />
-            </div>
-
-            {/* Email Field */}
-            <div className="relative flex h-16 items-center rounded-full border border-[#d9eaf7] bg-[#f5faff] shadow-sm hover:shadow-md transition-shadow">
-              <div className="absolute left-5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#1d9bf0]/10">
-                <svg className="h-5 w-5 text-[#1d9bf0]" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                </svg>
-              </div>
-              <input
-                type="email"
-                placeholder="Enter Email Address"
-                className="h-full w-full border-0 bg-transparent pl-20 pr-6 text-base text-slate-900 placeholder-slate-500 focus:outline-none"
-              />
-            </div>
-
-            {/* Message Field with Send Button */}
-            <div className="relative overflow-hidden rounded-3xl border border-[#d9eaf7] bg-[#f5faff] shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex">
-                <div className="absolute left-5 top-5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#1d9bf0]/10">
-                  <svg className="h-5 w-5 text-[#1d9bf0]" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V5z" />
-                    <path d="M6 11a1 1 0 11-2 0 1 1 0 012 0z" />
-                    <path d="M12 11a1 1 0 11-2 0 1 1 0 012 0z" />
-                    <path d="M16 11a1 1 0 11-2 0 1 1 0 012 0z" />
-                  </svg>
-                </div>
-                <textarea
-                  placeholder="Enter Message"
-                  rows="4"
-                  className="w-full resize-none border-0 bg-transparent pl-20 pr-32 py-4 text-base text-slate-900 placeholder-slate-500 focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="absolute bottom-4 right-4 inline-flex items-center justify-center rounded-full bg-[#1d9bf0] px-8 py-3 text-base font-semibold text-white shadow-lg hover:bg-[#1786d3] transition-all"
-                >
-                  Send
-                </button>
-              </div>
-            </div>
-          </form>
-
-          {/* Trust Indicators */}
-            <div className="mt-14 flex flex-col gap-4 border-t border-gray-200 pt-10 sm:flex-row sm:justify-center sm:gap-12">
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-base">★</span>
-                <span className="text-sm font-medium text-gray-700">Client-Focused Approach</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-base">🚀</span>
-                <span className="text-sm font-medium text-gray-700">Fast & Scalable Solutions</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-base">✓</span>
-                <span className="text-sm font-medium text-gray-700">Modern Tech Stack & AI Integration</span>
-              </div>
-            </div>
-        </div>
-      </section>
+      <motion.section className="bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-28" initial="hidden" whileInView="visible" viewport={sectionViewport} variants={sectionReveal}>
+        <MainPageInquiryForm />
+      </motion.section>
 
       
-    </div>
+    </motion.div>
   );
 }
 

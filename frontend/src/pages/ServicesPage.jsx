@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
+import Seo from "../components/seo/Seo.jsx";
+import { pageSeo } from "../constants/seo.js";
 
 const serviceDetails = [
   {
@@ -134,6 +136,7 @@ const technologies = [
 function ServicesPage() {
   return (
     <div className="bg-white text-slate-900">
+      <Seo {...pageSeo.services} />
       <section className="bg-white px-4 pb-14 pt-8 text-slate-900 md:px-12 md:pt-12">
         <div className="mx-auto w-full max-w-6xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#1d9bf0]">Services</p>
