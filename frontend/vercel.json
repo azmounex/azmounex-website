@@ -1,5 +1,19 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+  "redirects": [
+    {
+      "source": "http://azmounex.com/:path*",
+      "destination": "https://www.azmounex.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "http://www.azmounex.com/:path*",
+      "destination": "https://www.azmounex.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "https://azmounex.com/:path*",
+      "destination": "https://www.azmounex.com/:path*",
+      "permanent": true
+    }
   ]
 }
