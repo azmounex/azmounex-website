@@ -32,6 +32,29 @@ function ProjectsPage() {
     return `https://${trimmedUrl}`;
   };
 
+  const getProjectLink = (project) => {
+    const candidates = [project?.projectUrl, project?.url, project?.liveUrl, project?.website, project?.link];
+
+    for (const candidate of candidates) {
+      const normalizedUrl = normalizeProjectUrl(candidate);
+      if (normalizedUrl) {
+        return normalizedUrl;
+      }
+    }
+
+    return "";
+  };
+
+  const handleProjectClick = (project) => {
+    const projectLink = getProjectLink(project);
+
+    if (!projectLink) {
+      return;
+    }
+
+    window.open(projectLink, "_blank", "noopener,noreferrer");
+  };
+
   useEffect(() => {
     async function fetchProjects() {
       try {
@@ -151,24 +174,18 @@ function ProjectsPage() {
                       <h2 className="text-2xl font-extrabold tracking-tighter text-slate-900 md:text-3xl">{project.title}</h2>
                       <p className="mt-2 text-sm leading-6 text-slate-600 md:text-base">{project.description}</p>
                     </div>
-                    {normalizeProjectUrl(project.projectUrl) ? (
-                      <a
-                        href={normalizeProjectUrl(project.projectUrl)}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Open ${project.title} project link`}
-                        className="mt-1 inline-flex rounded-full bg-[#1d9bf0] p-3 text-white shadow-sm transition hover:bg-[#1786d3]"
-                      >
-                        <ArrowRight className="h-5 w-5" />
-                      </a>
-                    ) : (
-                      <span
-                        aria-hidden="true"
-                        className="mt-1 inline-flex rounded-full bg-slate-200 p-3 text-slate-400"
-                      >
-                        <ArrowRight className="h-5 w-5" />
-                      </span>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleProjectClick(project)}
+                      aria-label={`Open ${project.title} project link`}
+                      className={`mt-1 inline-flex rounded-full p-3 shadow-sm transition ${
+                        getProjectLink(project)
+                          ? "bg-[#1d9bf0] text-white hover:bg-[#1786d3]"
+                          : "cursor-not-allowed bg-slate-200 text-slate-400"
+                      }`}
+                    >
+                      <ArrowRight className="h-5 w-5" />
+                    </button>
                   </div>
 
                   {Array.isArray(project.technologies) && project.technologies.length > 0 && (
