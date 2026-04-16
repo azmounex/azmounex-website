@@ -217,7 +217,7 @@ function AdminDashboardPage() {
         />
       </div>
 
-      <div id="submissions" className="grid gap-8 xl:grid-cols-2">
+      <div id="submissions" className="grid gap-8 lg:grid-cols-2">
         <SubmissionsSection
           title="Contact Submissions"
           description="Messages sent through the contact page."

@@ -14,7 +14,10 @@ router.use((req, res, next) => {
   next();
 });
 
-router.get("/team-members", asyncHandler(getPublicTeamMembers));
+router.get("/team-members", (req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+}, asyncHandler(getPublicTeamMembers));
 router.get("/projects", asyncHandler(getPublicProjects));
 router.get("/project-categories", asyncHandler(getPublicProjectCategories));
 router.get("/hero-slides", asyncHandler(getPublicHeroSlides));

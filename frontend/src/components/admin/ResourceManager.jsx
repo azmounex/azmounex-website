@@ -24,7 +24,7 @@ function mapRecordToState(record, fields) {
       return accumulator;
     }
 
-    accumulator[field.name] = record[field.name] ?? "";
+    accumulator[field.name] = record[field.name] ?? record.socialLinks?.[field.name] ?? "";
     return accumulator;
   }, {});
 }
