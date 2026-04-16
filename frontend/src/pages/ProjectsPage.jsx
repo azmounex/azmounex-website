@@ -17,8 +17,16 @@ function ProjectsPage() {
       return "";
     }
 
+    if (/^httpps:\/\//i.test(trimmedUrl)) {
+      return trimmedUrl.replace(/^httpps:\/\//i, "https://");
+    }
+
     if (/^https?:\/\//i.test(trimmedUrl)) {
       return trimmedUrl;
+    }
+
+    if (trimmedUrl.startsWith("//")) {
+      return `https:${trimmedUrl}`;
     }
 
     return `https://${trimmedUrl}`;
