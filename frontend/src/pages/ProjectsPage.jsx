@@ -10,6 +10,20 @@ function ProjectsPage() {
   const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
+  const normalizeProjectUrl = (url) => {
+    const trimmedUrl = url?.trim();
+
+    if (!trimmedUrl) {
+      return "";
+    }
+
+    if (/^https?:\/\//i.test(trimmedUrl)) {
+      return trimmedUrl;
+    }
+
+    return `https://${trimmedUrl}`;
+  };
+
   useEffect(() => {
     async function fetchProjects() {
       try {
@@ -129,9 +143,24 @@ function ProjectsPage() {
                       <h2 className="text-2xl font-extrabold tracking-tighter text-slate-900 md:text-3xl">{project.title}</h2>
                       <p className="mt-2 text-sm leading-6 text-slate-600 md:text-base">{project.description}</p>
                     </div>
-                    <button type="button" className="mt-1 rounded-full bg-[#1d9bf0] p-3 text-white shadow-sm hover:bg-[#1786d3]">
-                      <ArrowRight className="h-5 w-5" />
-                    </button>
+                    {normalizeProjectUrl(project.projectUrl) ? (
+                      <a
+                        href={normalizeProjectUrl(project.projectUrl)}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Open ${project.title} project link`}
+                        className="mt-1 inline-flex rounded-full bg-[#1d9bf0] p-3 text-white shadow-sm transition hover:bg-[#1786d3]"
+                      >
+                        <ArrowRight className="h-5 w-5" />
+                      </a>
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="mt-1 inline-flex rounded-full bg-slate-200 p-3 text-slate-400"
+                      >
+                        <ArrowRight className="h-5 w-5" />
+                      </span>
+                    )}
                   </div>
 
                   {Array.isArray(project.technologies) && project.technologies.length > 0 && (
