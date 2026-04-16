@@ -40,12 +40,26 @@ function serializeTeamMember(teamMember) {
 }
 
 async function removeStoredFile(image) {
-  if (!image?.path) {
+  if (!image) {
+    return;
+  }
+
+  let filePath = image.path;
+
+  if (!filePath && image.filename) {
+    filePath = path.resolve(process.cwd(), "uploads", "staff", image.filename);
+  }
+
+  if (!filePath && image.url && image.url.startsWith("/uploads/")) {
+    filePath = path.resolve(process.cwd(), image.url.slice(1));
+  }
+
+  if (!filePath) {
     return;
   }
 
   try {
-    await fs.unlink(image.path);
+    await fs.unlink(filePath);
   } catch {
     // Ignore cleanup errors.
   }
