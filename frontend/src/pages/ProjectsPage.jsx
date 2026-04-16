@@ -17,6 +17,12 @@ function ProjectsPage() {
         const data = await apiRequest("/public/projects");
         const normalizedProjects = Array.isArray(data)
           ? data
+          : Array.isArray(data?.data)
+            ? data.data
+            : Array.isArray(data?.items)
+              ? data.items
+              : Array.isArray(data?.results)
+                ? data.results
           : Array.isArray(data?.projects)
             ? data.projects
             : [];

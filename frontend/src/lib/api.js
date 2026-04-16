@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? "https://azmounex-website.onrender.com/api" : "/api");
 const BACKEND_ORIGIN =
   import.meta.env.VITE_BACKEND_URL || (API_BASE_URL.startsWith("http") ? new URL(API_BASE_URL).origin : "");
 
@@ -19,7 +21,16 @@ async function apiRequest(path, { method = "GET", token, data, isFormData = fals
     body: data === undefined ? undefined : isFormData ? data : JSON.stringify(data),
   });
 
-  const payload = await response.json().catch(() => ({}));
+  const responseText = await response.text();
+  let payload = {};
+
+  if (responseText) {
+    try {
+      payload = JSON.parse(responseText);
+    } catch {
+      throw new Error("Invalid API response format. Verify API base URL and backend deployment.");
+    }
+  }
 
   if (!response.ok) {
     throw new Error(payload.message || "Request failed");

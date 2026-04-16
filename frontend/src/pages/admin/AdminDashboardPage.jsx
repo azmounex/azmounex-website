@@ -9,7 +9,9 @@ function normalizeListPayload(payload, fallbackKeys = []) {
     return payload;
   }
 
-  for (const key of fallbackKeys) {
+  const lookupKeys = ["data", "items", "results", ...fallbackKeys];
+
+  for (const key of lookupKeys) {
     if (Array.isArray(payload?.[key])) {
       return payload[key];
     }

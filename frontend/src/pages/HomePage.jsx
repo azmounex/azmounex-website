@@ -170,6 +170,12 @@ function HomePage() {
         const data = await apiRequest("/public/hero-slides");
         const normalizedSlides = Array.isArray(data)
           ? data
+          : Array.isArray(data?.data)
+            ? data.data
+            : Array.isArray(data?.items)
+              ? data.items
+              : Array.isArray(data?.results)
+                ? data.results
           : Array.isArray(data?.slides)
             ? data.slides
             : Array.isArray(data?.heroSlides)
