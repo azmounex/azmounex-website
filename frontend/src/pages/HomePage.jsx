@@ -9,6 +9,11 @@ import desktopImage from "../assets/services_section/desktop.avif";
 import aiImage from "../assets/services_section/ai.webp";
 import saasImage from "../assets/services_section/saas.webp";
 import mobileImage from "../assets/services_section/mobile.webp";
+import heroImage1 from "../assets/hero_section/hero_section_image_1.png";
+import heroImage2 from "../assets/hero_section/hero_section_image_2.png";
+import heroImage3 from "../assets/hero_section/hero_section_image_3.png";
+import heroImage4 from "../assets/hero_section/hero_section_image_4.png";
+import heroImage5 from "../assets/hero_section/hero_section_image_5.png";
 import MainPageInquiryForm from "../components/forms/MainPageInquiryForm.jsx";
 import { apiRequest, resolveMediaUrl } from "../lib/api.js";
 import Seo from "../components/seo/Seo.jsx";
@@ -147,10 +152,12 @@ const services = [
 
 
 function HomePage() {
-  const [heroSlides, setHeroSlides] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+
+  // Hero images loaded statically from frontend assets
+  const staticHeroImages = [heroImage1, heroImage2, heroImage3, heroImage4, heroImage5];
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
@@ -164,39 +171,7 @@ function HomePage() {
     };
   }, []);
 
-  useEffect(() => {
-    async function fetchHeroSlides() {
-      try {
-        const data = await apiRequest("/public/hero-slides");
-        const normalizedSlides = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.data)
-            ? data.data
-            : Array.isArray(data?.items)
-              ? data.items
-              : Array.isArray(data?.results)
-                ? data.results
-          : Array.isArray(data?.slides)
-            ? data.slides
-            : Array.isArray(data?.heroSlides)
-              ? data.heroSlides
-              : [];
-        setHeroSlides(normalizedSlides);
-      } catch {
-        setHeroSlides([]);
-      }
-    }
-
-    fetchHeroSlides();
-  }, []);
-
-  const heroImages = useMemo(
-    () =>
-      heroSlides.length
-        ? heroSlides.map((slide) => resolveMediaUrl(slide.imageUrl)).filter(Boolean)
-        : ["https://placehold.co/1000x1200/e2e8f0/0f172a?text=Hero+Image"],
-    [heroSlides],
-  );
+  const heroImages = useMemo(() => staticHeroImages, []);
 
   const interactiveHover = isMobile || shouldReduceMotion ? undefined : hoverLift;
   const interactiveCardHover =
