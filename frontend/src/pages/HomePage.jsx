@@ -9,11 +9,6 @@ import desktopImage from "../assets/services_section/desktop.avif";
 import aiImage from "../assets/services_section/ai.webp";
 import saasImage from "../assets/services_section/saas.webp";
 import mobileImage from "../assets/services_section/mobile.webp";
-import heroImage1 from "../assets/hero_section/hero_section_image_1.png";
-import heroImage2 from "../assets/hero_section/hero_section_image_2.png";
-import heroImage3 from "../assets/hero_section/hero_section_image_3.png";
-import heroImage4 from "../assets/hero_section/hero_section_image_4.png";
-import heroImage5 from "../assets/hero_section/hero_section_image_5.png";
 import MainPageInquiryForm from "../components/forms/MainPageInquiryForm.jsx";
 import { apiRequest, resolveMediaUrl } from "../lib/api.js";
 import Seo from "../components/seo/Seo.jsx";
@@ -156,8 +151,14 @@ function HomePage() {
   const [isMobile, setIsMobile] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
-  // Hero images loaded statically from frontend assets
-  const staticHeroImages = [heroImage1, heroImage2, heroImage3, heroImage4, heroImage5];
+  // Hero images loaded from public folder
+  const staticHeroImages = [
+    "/hero_section/hero_section_image_1.png",
+    "/hero_section/hero_section_image_2.png",
+    "/hero_section/hero_section_image_3.png",
+    "/hero_section/hero_section_image_4.png",
+    "/hero_section/hero_section_image_5.png",
+  ];
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
