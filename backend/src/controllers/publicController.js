@@ -2,18 +2,6 @@ import HeroSlide from "../models/HeroSlide.js";
 import Project from "../models/Project.js";
 import TeamMember from "../models/TeamMember.js";
 
-function normalizeTeamImageUrl(url) {
-  if (!url) {
-    return "";
-  }
-
-  if (url.startsWith("/uploads/team/")) {
-    return url.replace("/uploads/team/", "/uploads/staff/");
-  }
-
-  return url;
-}
-
 function normalizeCategories(values) {
   return values
     .filter(Boolean)
@@ -24,15 +12,7 @@ function normalizeCategories(values) {
 
 async function getPublicTeamMembers(req, res) {
   const teamMembers = await TeamMember.find({ isActive: true }).sort({ order: 1, createdAt: 1 }).lean();
-  const normalizedMembers = teamMembers.map((member) => ({
-    ...member,
-    image: {
-      ...(member.image || {}),
-      url: normalizeTeamImageUrl(member.image?.url),
-    },
-  }));
-
-  return res.json(normalizedMembers);
+  return res.json(teamMembers);
 }
 
 async function getPublicProjects(req, res) {

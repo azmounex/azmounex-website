@@ -1,19 +1,5 @@
-import fs from "fs/promises";
-import path from "path";
 import TeamMember from "../models/TeamMember.js";
-
-function normalizeImageUrl(url) {
-  if (!url) {
-    return "";
-  }
-
-  // Backward compatibility: old records used /uploads/team while files were stored in /uploads/staff.
-  if (url.startsWith("/uploads/team/")) {
-    return url.replace("/uploads/team/", "/uploads/staff/");
-  }
-
-  return url;
-}
+import cloudinary from "../config/cloudinary.js";
 
 function imagePayload(file) {
   if (!file) {
@@ -21,9 +7,9 @@ function imagePayload(file) {
   }
 
   return {
-    url: path.posix.join("/uploads", "staff", file.filename),
+    url: file.path,
     filename: file.filename,
-    path: file.path,
+    public_id: file.public_id,
   };
 }
 
@@ -34,32 +20,17 @@ function serializeTeamMember(teamMember) {
     ...record,
     image: {
       ...(record.image || {}),
-      url: normalizeImageUrl(record.image?.url),
     },
   };
 }
 
 async function removeStoredFile(image) {
-  if (!image) {
-    return;
-  }
-
-  let filePath = image.path;
-
-  if (!filePath && image.filename) {
-    filePath = path.resolve(process.cwd(), "uploads", "staff", image.filename);
-  }
-
-  if (!filePath && image.url && image.url.startsWith("/uploads/")) {
-    filePath = path.resolve(process.cwd(), image.url.slice(1));
-  }
-
-  if (!filePath) {
+  if (!image || !image.public_id) {
     return;
   }
 
   try {
-    await fs.unlink(filePath);
+    await cloudinary.v2.uploader.destroy(image.public_id);
   } catch {
     // Ignore cleanup errors.
   }

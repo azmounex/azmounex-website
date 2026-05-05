@@ -130,11 +130,11 @@ const teamSeedData = [
 ];
 
 const heroSlidesSeedData = [
-  { imageUrl: "/uploads/hero_section/hero_section_image_1.png", order: 1 },
-  { imageUrl: "/uploads/hero_section/hero_section_image_2.png", order: 2 },
-  { imageUrl: "/uploads/hero_section/hero_section_image_3.png", order: 3 },
-  { imageUrl: "/uploads/hero_section/hero_section_image_4.png", order: 4 },
-  { imageUrl: "/uploads/hero_section/hero_section_image_5.png", order: 5 },
+  { imageUrl: "/assets/hero_section/hero_section_image_1.png", order: 1 },
+  { imageUrl: "/assets/hero_section/hero_section_image_2.png", order: 2 },
+  { imageUrl: "/assets/hero_section/hero_section_image_3.png", order: 3 },
+  { imageUrl: "/assets/hero_section/hero_section_image_4.png", order: 4 },
+  { imageUrl: "/assets/hero_section/hero_section_image_5.png", order: 5 },
 ];
 
 function slugify(value) {

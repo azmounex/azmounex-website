@@ -1,6 +1,5 @@
-import fs from "fs/promises";
-import path from "path";
 import Project from "../models/Project.js";
+import cloudinary from "../config/cloudinary.js";
 import { slugify } from "./categoryController.js";
 
 function normalizeTechnologies(value) {
@@ -23,38 +22,22 @@ function imagePayload(file) {
     return undefined;
   }
 
-  const relativePath = path.posix.join("/uploads", "projects", file.filename);
-
   return {
-    url: relativePath,
+    url: file.path,
     filename: file.filename,
-    path: file.path,
+    public_id: file.public_id,
   };
 }
 
 async function removeStoredFile(image) {
-  if (!image) {
-    return;
-  }
-
-  let filePath = image.path;
-
-  if (!filePath && image.filename) {
-    filePath = path.resolve(process.cwd(), "uploads", "projects", image.filename);
-  }
-
-  if (!filePath && image.url && image.url.startsWith("/uploads/")) {
-    filePath = path.resolve(process.cwd(), image.url.slice(1));
-  }
-
-  if (!filePath) {
+  if (!image || !image.public_id) {
     return;
   }
 
   try {
-    await fs.unlink(filePath);
+    await cloudinary.v2.uploader.destroy(image.public_id);
   } catch {
-    // Ignore missing files during cleanup.
+    // Ignore cleanup errors.
   }
 }
 
