@@ -8,7 +8,6 @@ function createImageUpload(folderName) {
     params: {
       folder: `portfolio/${folderName}`,
       resource_type: "auto",
-      format: async (req, file) => "auto",
     },
   });
 
