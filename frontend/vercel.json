@@ -1,8 +1,25 @@
 {
   "rewrites": [
     {
-      "source": "/:path((?!_next/static|_next/image|favicon.ico|hero_section|assets).*)",
+      "source": "/:path((?!assets|hero_section|favicon.ico|favicon-16x16.png|favicon-32x32.png|favicon.svg|apple-touch-icon.png|android-chrome-192x192.png|android-chrome-512x512.png|site.webmanifest|robots.txt|sitemap.xml|icons.svg).*)",
       "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "http://azmounex.com/:path*",
+      "destination": "https://www.azmounex.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "http://www.azmounex.com/:path*",
+      "destination": "https://www.azmounex.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "https://azmounex.com/:path*",
+      "destination": "https://www.azmounex.com/:path*",
+      "permanent": true
     }
   ]
 }
